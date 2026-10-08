@@ -20,6 +20,8 @@ import network
 from machine import reset, Pin
 from time import ticks_ms
 import secrets
+import requests
+import socket
 
 ssid = secrets.SSID
 password = secrets.PASSWORD
@@ -49,3 +51,42 @@ def do_connect():
     return wlan    
     
 wlan = do_connect()
+
+if ssid == 'EK-PUBLIC' and wlan.isconnected():
+    req = '''POST /index.php?zone=guest HTTP/1.1
+Host: 192.168.200.1:8002
+User-Agent: curl/8.21.0
+Accept: */*
+Content-Length: 12
+Content-Type: application/x-www-form-urlencoded
+
+accept=Login
+'''
+    print('[+] Connected to WiFi', wlan.ifconfig())
+    print('[+] Network test')
+    addr_info = socket.getaddrinfo('192.168.200.1', 8002)
+    addr = addr_info[0][-1]
+
+    s = socket.socket()
+    print('[+] Connecting to',addr)
+    s.connect(addr)
+    req_text = req.replace('\n','\r\n')
+    s.send(req_text.encode('utf-8'))
+    while True:
+        data = s.recv(1024) # Adjust buffer size as needed
+        if not data:
+            break
+        print(data.decode('utf-8'), end="")
+    s.close()
+    gc.collect()
+    print('[+] Testing internet connection...')
+    res = requests.get('https://www.ek.dk/')
+    if res.status_code == 200:
+        print('[+] Succesfully connected to the entaweb-machine')
+    else:
+        print('[-] Some error happend', res.status_code)
+    gc.collect()
+else:
+    print('[-] Error connecting. Try again')
+    reset()
+    
