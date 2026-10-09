@@ -86,6 +86,8 @@ accept=Login
     else:
         print('[-] Some error happend', res.status_code)
     gc.collect()
+elif wlan.isconnected():
+    print('[+] Connected to', ssid)
 else:
     print('[-] Error connecting. Try again')
     reset()
