@@ -53,6 +53,8 @@ client = TBDeviceMqttClient(secrets.SERVER_IP_ADDRESS, access_token = secrets.AC
 # Connecting to ThingsBoard
 client.connect()
 print("connected to thingsboard, starting to send and receive data")
+#callback to get server RPC requests
+client.set_server_side_rpc_request_handler(handler)
 while True:
     try:
         print(f"free memory: {gc.mem_free()}")
@@ -66,8 +68,7 @@ while True:
         #telemetry = {}
         #client.send_telemetry(telemetry)
         
-        #callback to get server RPC requests
-        client.set_server_side_rpc_request_handler(handler) 
+         
         
         # Checking for incoming subscriptions or RPC call requests (non-blocking)
         client.check_msg()
